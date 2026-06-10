@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">KidWatch</string>
+    <string name="device_admin_description">KidWatch needs device administrator access to prevent unauthorized removal. Only the parent PIN can disable this.</string>
+</resources>
