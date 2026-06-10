@@ -13,66 +13,56 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout code ──────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Set up Java 17 ─────────────────────────────────────
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      # ── 3. Install Android SDK components ─────────────────────
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android build tools
+      - name: Install Android platform
         run: |
-          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
-      # ── 4. Generate Gradle wrapper if missing ─────────────────
-      - name: Generate Gradle wrapper
+      # Download Gradle 8.4 wrapper directly — skip auto-generate
+      - name: Install Gradle 8.4 wrapper
         run: |
-          if [ ! -f "gradlew" ]; then
-            echo "gradlew not found, generating..."
-            gradle wrapper --gradle-version 8.4 --distribution-type bin
-          else
-            echo "gradlew found"
-          fi
+          mkdir -p gradle/wrapper
+          # Download gradlew script
+          curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradlew -o gradlew
+          chmod +x gradlew
+          # Download wrapper jar
+          curl -sL https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar \
+            -o gradle/wrapper/gradle-wrapper.jar
+          # Write properties pinned to 8.4
+          cat > gradle/wrapper/gradle-wrapper.properties << 'PROPS'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
+          networkTimeout=10000
+          validateDistributionUrl=true
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          PROPS
 
-      # ── 5. Make gradlew executable ────────────────────────────
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      # ── 6. Cache Gradle ───────────────────────────────────────
-      - name: Cache Gradle packages
+      - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-8.4-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-8.4-
 
-      # ── 7. Show project structure for debugging ───────────────
-      - name: Show project structure
-        run: |
-          echo "=== Root files ==="
-          ls -la
-          echo "=== App folder ==="
-          ls -la app/ || echo "No app folder"
-          echo "=== Manifest check ==="
-          cat app/src/main/AndroidManifest.xml | head -5 || echo "No manifest"
-
-      # ── 8. Build Debug APK ────────────────────────────────────
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --info
+        run: ./gradlew assembleDebug --stacktrace
 
-      # ── 9. Upload APK artifact ────────────────────────────────
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
