@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "7662874124",
+    "project_id": "spyware-44422",
+    "storage_bucket": "spyware-44422.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7662874124:android:a1cf914c87380e898c0829",
+        "android_client_info": {
+          "package_name": "com.dellvantix.kidwatch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlQBKEv2kp_s1EjBD4ftJavoqvLnILCGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
