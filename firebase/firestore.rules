@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════
+//  KidWatch Firestore Security Rules
+//  Only authenticated users can read their linked devices.
+//  The Android app writes as an anonymous user tied to a device.
+// ═══════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Device documents ──────────────────────────────────
+    // Any authenticated user can read/write device data.
+    // In production: restrict to specific parent UID → device mapping.
+    match /devices/{deviceId} {
+      allow read, write: if request.auth != null;
+
+      // Screenshots sub-collection
+      match /screenshots/{screenshotId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // SMS sub-collection
+      match /sms/{smsId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+      }
+
+      // Call logs sub-collection
+      match /calls/{callId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+      }
+    }
+
+    // ── Parent → Device mapping (optional advanced setup) ──
+    // /parentDevices/{parentUid}/devices/{deviceId}
+    match /parentDevices/{parentUid} {
+      allow read, write: if request.auth.uid == parentUid;
+
+      match /devices/{deviceId} {
+        allow read, write: if request.auth.uid == parentUid;
+      }
+    }
+  }
+}
