@@ -3,7 +3,10 @@ name: Build KidWatch APK
 on:
   push:
     branches: [ main, master ]
-  workflow_dispatch:  # Also allows manual trigger from Actions tab
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -22,15 +25,29 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      # ── 3. Set up Android SDK ─────────────────────────────────
+      # ── 3. Install Android SDK components ─────────────────────
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # ── 4. Make gradlew executable ────────────────────────────
+      - name: Install Android build tools
+        run: |
+          sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
+      # ── 4. Generate Gradle wrapper if missing ─────────────────
+      - name: Generate Gradle wrapper
+        run: |
+          if [ ! -f "gradlew" ]; then
+            echo "gradlew not found, generating..."
+            gradle wrapper --gradle-version 8.4 --distribution-type bin
+          else
+            echo "gradlew found"
+          fi
+
+      # ── 5. Make gradlew executable ────────────────────────────
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # ── 5. Cache Gradle dependencies ──────────────────────────
+      # ── 6. Cache Gradle ───────────────────────────────────────
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -41,11 +58,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # ── 6. Build Debug APK (no signing needed for sideload) ───
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      # ── 7. Show project structure for debugging ───────────────
+      - name: Show project structure
+        run: |
+          echo "=== Root files ==="
+          ls -la
+          echo "=== App folder ==="
+          ls -la app/ || echo "No app folder"
+          echo "=== Manifest check ==="
+          cat app/src/main/AndroidManifest.xml | head -5 || echo "No manifest"
 
-      # ── 7. Upload APK as downloadable artifact ────────────────
+      # ── 8. Build Debug APK ────────────────────────────────────
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --info
+
+      # ── 9. Upload APK artifact ────────────────────────────────
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
