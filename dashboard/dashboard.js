@@ -4,12 +4,12 @@
 // ═══════════════════════════════════════════════════════
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCICVA3hrXt2QmxCVV5cFMurp5SdtEErEs",
+  authDomain: "spyware-44422.firebaseapp.com",
+  projectId: "spyware-44422",
+  storageBucket: "spyware-44422.firebasestorage.app",
+  messagingSenderId: "7662874124",
+  appId: "1:7662874124:web:e6a9e0f5c6fa1d388c0829"
 };
 
 firebase.initializeApp(firebaseConfig);
